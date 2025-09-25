@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: genai_db
+      POSTGRES_USER: genai_user
+      POSTGRES_PASSWORD: genai_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  web:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DB_NAME: genai_db
+      DB_USER: genai_user
+      DB_PASSWORD: genai_pass
+      DB_HOST: db
+      DB_PORT: 5432
+    ports:
+      - "8001:8000"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+  db-init:
+      build:
+        context: .
+        dockerfile: Dockerfile.init
+      depends_on:
+        - db
+      environment:
+        DB_NAME: genai_db
+        DB_USER: genai_user
+        DB_PASSWORD: genai_pass
+        DB_HOST: db
+        DB_PORT: 5432
+      entrypoint: ["/bin/bash", "create_table.sh", "genai_db", "genai_user", "genai_pass", "db", "5432"]
+
+volumes:
+  postgres_data:
+
+

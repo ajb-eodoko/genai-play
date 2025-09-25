@@ -1,0 +1,7 @@
+# Dockerfile.init
+FROM postgres:15
+
+COPY create_table.sh /create_table.sh
+RUN chmod +x /create_table.sh
+
+ENTRYPOINT ["/create_table.sh"]
